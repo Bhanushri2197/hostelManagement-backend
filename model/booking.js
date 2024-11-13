@@ -3,8 +3,13 @@ const mongoose = require('mongoose');
 const BookingSchema = new mongoose.Schema({
   checkIn: { type: Date, default: Date.now },
   checkOut: { type: Date, default: Date.now },
-  guest: Number,
-  rooms: String
+  email: String,
+  rooms: String,
+  status: { 
+    type: String,
+    required: true,
+    default: 'Pending'
+  },
 });
 
 const BookingModel = mongoose.model("booking", BookingSchema);

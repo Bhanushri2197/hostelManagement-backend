@@ -1,24 +1,30 @@
 var express = require('express');
 var router = express.Router();
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
-const RoomsModel = require('../bin/model/rooms');
+const RoomsModel = require('../model/rooms');
+const UploadImg = require('../model/uploadImg')
+
+
 
 // POST request to add room
-router.post('/rooms', upload.single('roomImg'), (req, res) => {
-  const { roomTitle, availability, price, description } = req.body;
-  const roomImg = req.file.path; // Multer saves the image, and its path is stored
-
-  RoomsModel.create({
-    roomTitle,
-    roomImg,
-    availability,
-    price,
-    description
-  })
-  .then(rooms => res.json(rooms))
-  .catch(err => res.status(500).json({ error: err.message }));
-});
+router.post('/rooms', async (req, res) => {
+    try {
+      const { roomTitle, availability, price, description, roomImg } = req.body;
+      const uploadedImageUrl = await UploadImg(roomImg); 
+      
+      const newRoom = await RoomsModel.create({
+        roomTitle,
+        roomImg: uploadedImageUrl, 
+        availability,
+        price,
+        description
+      });
+      
+      res.json(newRoom);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
 
 // GET request to fetch all rooms
 router.get('/rooms', (req, res) => {

@@ -5,6 +5,7 @@ const complainSchema = new mongoose.Schema({
   email: String,
   roomNo: String,
   description: String,
+  assignee : String,
   status: { 
     type: String,
     required: true,

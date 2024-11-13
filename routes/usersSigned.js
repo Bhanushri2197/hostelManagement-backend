@@ -1,13 +1,13 @@
 var express = require("express");
 var router = express.Router();
 const UsersModel = require("../model/users");
-const sendWelcomeEmail = require('../utils/sentMail');  // Assuming this is your email sending utility
+const sendWelcomeEmail = require('../utils/nodeMails/welcomeMail');  
 const bcrypt = require("bcrypt"); 
 
 /* POST sign-in (registration). */
 router.post("/sign-in", async function (req, res, next) {
   try {
-    const { name, email, phone, role, password } = req.body;
+    const { name, email, phone, role,roomNo, password } = req.body;
 
     // Check if user already exists
     const existingUser = await UsersModel.findOne({ email });
@@ -24,6 +24,7 @@ router.post("/sign-in", async function (req, res, next) {
       email,
       phone,
       role,
+      roomNo,
       password: hashedPassword,
     });
 
@@ -43,6 +44,12 @@ router.post("/sign-in", async function (req, res, next) {
   }
 });
 
+router.get('/users', (req, res) => {
+  UsersModel.find()
+    .then(user => res.json(user))
+    .catch(err => res.status(500).json({ error: err.message }));
+});
+
 /* POST log-in (authentication). */
 router.post('/log-in', async function (req, res, next) {
   const { email, password } = req.body;
@@ -59,10 +66,47 @@ router.post('/log-in', async function (req, res, next) {
     }
 
     // Return user data along with login success
-    res.status(200).json({ message: "Login successful", user: { name: user.name, email: user.email } });
+    res.status(200).json({ message: "Login successful", user: { _id: user._id, name: user.name, email: user.email ,role: user.role } });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT request to update room by ID
+router.put("/users/:_id", async (req, res) => {
+  try {
+    const updatedUser = await UsersModel.findByIdAndUpdate(req.params._id, req.body, { new: true });
+    if (!updatedUser) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get('/users/:_id', async (req, res) => {
+  try {
+    const user = await  UsersModel.findById(req.params._id);
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete("/users/:_id", async (req, res) => {
+  try {
+    const deletedUser = await UsersModel.findByIdAndDelete(req.params._id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
