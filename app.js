@@ -32,9 +32,10 @@ app.use(express.urlencoded({ limit: "25mb" }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"], 
-  })
-);
+  origin: 'https://hostelmanagementbs.netlify.app', 
+  methods: 'GET,POST,PUT,DELETE', 
+  credentials: true 
+}));
 
 app.use("/", indexRouter);
 app.use("/complains", complainsRouter);
